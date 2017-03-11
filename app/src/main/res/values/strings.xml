@@ -26,4 +26,5 @@
     <string name="empty_stocks_list">No stocks added</string>
     <string name="title_widget_detail">Stock quotes</string>
     <string name="stock_cant_be_added">Stock %s cannot be added</string>
+    <string name="ok_label">OK</string>
 </resources>

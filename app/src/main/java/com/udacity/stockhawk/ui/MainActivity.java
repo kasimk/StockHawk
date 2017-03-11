@@ -192,7 +192,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
             if (intent.getAction().equals(QuoteSyncJob.ACTION_WRONG_STOCK_SYMBOL)) {
                 String symbol = intent.getStringExtra(STOCK_SYMBOL_EXTRA);
                 final Snackbar snackBar = Snackbar.make(swipeRefreshLayout, getResources().getString(R.string.stock_cant_be_added, symbol), Snackbar.LENGTH_INDEFINITE);
-                snackBar.setAction("OK", new View.OnClickListener() {
+                snackBar.setAction(R.string.ok_label, new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         //DO NOTHING
