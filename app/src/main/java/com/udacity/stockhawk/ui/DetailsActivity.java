@@ -2,13 +2,15 @@ package com.udacity.stockhawk.ui;
 
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
+import android.support.v4.app.NavUtils;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
+import android.view.MenuItem;
 import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.LineChart;
@@ -39,6 +41,7 @@ import static com.udacity.stockhawk.ui.MainActivity.STOCK_SYMBOL_EXTRA;
 public class DetailsActivity extends AppCompatActivity {
 
     private static final int STOCK_DETAILS_LOADER = 0;
+    private static final String STOCK_SYMBOL_BUNDLE_KEY = "com.udacity.stockhawk.ui.DetailsActivity.STOCK_SYMBOL_BUNDLE_KEY";
 
 
     @BindView(R.id.lc_stock_details)
@@ -61,18 +64,42 @@ public class DetailsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_details);
         ButterKnife.bind(this);
-        mSymbol = getIntent().getStringExtra(STOCK_SYMBOL_EXTRA);
-        getSupportActionBar().setTitle(mSymbol);
+        if (getIntent().getStringExtra(STOCK_SYMBOL_EXTRA) != null) {
+            mSymbol = getIntent().getStringExtra(STOCK_SYMBOL_EXTRA);
+        } else if (savedInstanceState != null && savedInstanceState.getString(STOCK_SYMBOL_BUNDLE_KEY) != null) {
+            mSymbol = savedInstanceState.getString(STOCK_SYMBOL_BUNDLE_KEY);
+        }
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle(mSymbol);
+        }
+
         mDetailsAdapter = new DetailsAdapter();
         mDetailsRecyclerView.setAdapter(mDetailsAdapter);
         getSupportLoaderManager().initLoader(STOCK_DETAILS_LOADER, null, dataCallbacks);
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (mSymbol != null) {
+            outState.putString(STOCK_SYMBOL_BUNDLE_KEY, mSymbol);
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                NavUtils.navigateUpFromSameTask(this);
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
 
     private void setData(Cursor data) {
         List<Entry> entries = new ArrayList<>();
         final List<QuoteHistoryModel> quoteHistory = new ArrayList<>();
-        if (data.moveToNext()) {
+        if (data.moveToFirst()) {
             String history = data.getString(data.getColumnIndex(Contract.Quote.COLUMN_HISTORY));
             Float mAbsoluteChange = data.getFloat(data.getColumnIndex(Contract.Quote.COLUMN_ABSOLUTE_CHANGE));
             Float mPrice = data.getFloat(data.getColumnIndex(Contract.Quote.COLUMN_PRICE));
@@ -133,6 +160,7 @@ public class DetailsActivity extends AppCompatActivity {
 
         mChart.setData(lineData);
         mChart.animateX(500);
+
     }
 
 
@@ -142,17 +170,11 @@ public class DetailsActivity extends AppCompatActivity {
         @Override
         public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 
-            final Cursor data = null;
-
             return new AsyncTaskLoader<Cursor>(DetailsActivity.this) {
 
                 @Override
                 protected void onStartLoading() {
-                    if (data != null) {
-                        deliverResult(data);
-                    } else {
-                        forceLoad();
-                    }
+                    forceLoad();
                 }
 
                 @Override
